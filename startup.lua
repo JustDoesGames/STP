@@ -1,4 +1,3 @@
-version = 1
 update = false
 --[[
 
@@ -9,7 +8,7 @@ Simplistic t Program (STP)
 local patchnotes = {
 	"Removed logo for simplisity",
 	"Label will no longer show 'Booting STP...'",
-	
+
 }
 
 local w,h = term.getSize()
@@ -18,7 +17,7 @@ clr, cp, sb, st = term.clear, term.setCursorPos, term.setBackgroundColor, term.s
 clr() cp(1,1) print("STP Initializing") print("================")
 
 if fs.exists("/disk") and not fs.exists("/disk/startup.lua") and shell.getRunningProgram() ~= "/disk/startup.lua" then
-	print("Type 'install' to install disk installer")
+	print("Type 'install' to install disk installer to '/disk/startup.lua'")
 	write(": ")
 	if string.lower(read()) == "install" then
 		if fs.exists("/disk") then
@@ -36,36 +35,39 @@ local prevLabel = os.getComputerLabel()
 
 local status, color = "Idle", "e"
 
+local u = http.get("https://raw.githubusercontent.com/JustDoesGames/STP/main/startup.lua")
+local t = u.readAll() u.close()
+local f = fs.open("test.lua", "w")
+f.write(t) f.close()
+error("yes")
+
 if not http then
 	c("Http is disabled. Skipping Update...") sleep(1)
 elseif not update then
 	c("Updates disabled. Skipping...") sleep(1)
 else
-	c("Checking for updates")
-	st(colors.black)
-	if fs.exists("STP_tmp.lua") then fs.delete("STP_tmp.lua") end
-	local tmpx, tmpy = term.getCursorPos()
-	shell.run("pastebin get tNt9N4x1 STP_tmp.lua") st(colors.white) cp(tmpx, tmpy)
-	if fs.exists("STP_tmp.lua") then
-		local t = fs.open("STP_tmp.lua", "r")
-		local u = t.readAll() t.close()
-		local t = fs.open(shell.getRunningProgram(), "r")
-		local current = t.readAll() t.close()
-		if u ~= current then
+	write("[STP] Checking for updates")
+	local h = http.get("https://raw.githubusercontent.com/JustDoesGames/STP/main/startup.lua") local update = h.readAll() h.close() textutils.slowPrint("...")
+	if update then
+		local t = fs.open(shell.getRunningProgram(), "r") local current = t.readAll() t.close()
+		if update ~= current then
 			fs.delete(shell.getRunningProgram())
-			fs.copy("STP_tmp.lua", shell.getRunningProgram())
+			local f = fs.open(shell.getRunningProgram(), "w") f.write(update) f.close()
+			c("Update Process (1/2)")
 			if fs.exists("/disk/startup.lua") then
 				print("Update disk? ('disk/startup.lua')")
-				print("y - yes")
-				print("n - no")
+				print("y - YES")
+				print("n - NO")
 				while true do
 					_,a = os.pullEvent("key")
 					if a == keys.y then
 						if fs.exists("/disk/startup.lua") then fs.delete("/disk/startup.lua") end
-						fs.copy("STP_tmp.lua", "/disk/startup.lua") break
+						fs.copy(shell.getRunningProgram(), "/disk/startup.lua")
+						c("Disk updated.") break
 					elseif a == keys.n then break end
 				end
 			end
+			c("Update Process (2/2)")
 			c("Update Complete. Rebooting...") sleep(1) os.reboot()
 		else
 			c("You are Up-To-Date.")
