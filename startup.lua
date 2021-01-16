@@ -35,12 +35,6 @@ local prevLabel = os.getComputerLabel()
 
 local status, color = "Idle", "e"
 
-local u = http.get("https://raw.githubusercontent.com/JustDoesGames/STP/main/startup.lua")
-local t = u.readAll() u.close()
-local f = fs.open("test.lua", "w")
-f.write(t) f.close()
-error("yes")
-
 if not http then
 	c("Http is disabled. Skipping Update...") sleep(1)
 elseif not update then
