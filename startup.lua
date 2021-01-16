@@ -41,11 +41,12 @@ elseif not update then
 	c("Updates disabled. Skipping...") sleep(1)
 else
 	write("[STP] Checking for updates")
-	local h = http.get("https://raw.githubusercontent.com/JustDoesGames/STP/main/startup.lua") local update = h.readAll() h.close() textutils.slowPrint("...")
+	local h = http.get("https://raw.githubusercontent.com/JustDoesGames/STP/main/startup.lua")
+	local update = false
+	if h then update = h.readAll() h.close() end textutils.slowPrint("...")
 	if update then
 		local t = fs.open(shell.getRunningProgram(), "r") local current = t.readAll() t.close()
 		if update ~= current then
-			fs.delete(shell.getRunningProgram())
 			local f = fs.open(shell.getRunningProgram(), "w") f.write(update) f.close()
 			c("Update Process (1/2)")
 			if fs.exists("/disk/startup.lua") then
