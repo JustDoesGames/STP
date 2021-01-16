@@ -7,8 +7,9 @@ Simplistic t Program (STP)
 
 local patchnotes = {
 	"Removed logo for simplisity",
+	"Fully reworked update system. (now goes through github)",
 	"Label will no longer show 'Booting STP...'",
-
+	"More unlisted and to follow...",
 }
 
 local w,h = term.getSize()
@@ -102,7 +103,6 @@ end
 
 if shell.getRunningProgram() == "disk/startup.lua" then
 	clr() cp(1,1)
-	setLabel("§eBooting STL...")
 	c("t plugged in. Unplug to use.") return
 end
 c("Loading Functions...")
