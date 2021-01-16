@@ -113,10 +113,9 @@ local function doRefuel()
 	if getLevel() == 0 then -- checks the first time
 		t.refuel(1) -- attempts to refuel
 		if getLevel() == 0 then -- if fails
-			local tmp, flashtrack = os.getComputerLabel(), 1
+			local flashtrack = 1
 			c("Need Fuel to proceed...") -- needs fuel
 			while getLevel() == 0 do setLabel("§"..flashcolors[flashtrack].."REFUEL") flashtrack=flashtrack+1 if flashtrack > #flashcolors then flashtrack=1 end t.refuel(1) sleep(.5) end -- searches for fuel
-			setLabel("§f"..tmp)
 		end
 	end
 end
