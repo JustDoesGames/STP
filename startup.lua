@@ -1,4 +1,5 @@
-update = true
+update = false
+console = false
 --[[
 
 Simplistic t Program (STP)
@@ -7,15 +8,23 @@ Simplistic t Program (STP)
 
 local patchnotes = {
 	"Removed logo for simplisity",
-	"Fully reworked update system. (now goes through github)",
+	"Console on boot off by default",
+	"Fully reworked update system. (now goes through github & pastebin)",
+	"Updating is now 2x faster and now uses the 'http' api instead of shell",
 	"Label will no longer show 'Booting STP...'",
-	"More unlisted and to follow...",
+	"Turtle is not longer required to be fueled to start in menu",
+	"Added patch notes",
+	"I am fully aware of current issues and in the process of fixing them.",
 }
 
 local w,h = term.getSize()
 clr, cp, sb, st = term.clear, term.setCursorPos, term.setBackgroundColor, term.setTextColor
 
-clr() cp(1,1) print("STP Initializing") print("================")
+local function drawLine() st(colors.gray) for i=1, w do write(string.char(127)) end st(colors.white)  end
+local function drawLines() clr() cp(1,1) drawLine() cp(1,h) drawLine() cp(1,2) end
+
+drawLines()
+cp(w/2-string.len("STP")/2,2) print("STP")
 
 if fs.exists("/disk") and not fs.exists("/disk/startup.lua") and shell.getRunningProgram() ~= "/disk/startup.lua" then
 	print("Type 'install' to install disk installer to '/disk/startup.lua'")
@@ -30,7 +39,7 @@ if fs.exists("/disk") and not fs.exists("/disk/startup.lua") and shell.getRunnin
 	end
 end
 
-local c = function(t) print("[STP] "..t) sleep(.02) end
+local c = function(t) if console then print("[STP] "..t) sleep(.02) end end
 local setLabel = function(name) return os.setComputerLabel(tostring(name)) end -- did it this way to convert to string because fuck lua
 local prevLabel = os.getComputerLabel()
 
@@ -120,9 +129,6 @@ local function doRefuel()
 	end
 end
 
-local function drawLine() st(colors.gray) for i=1, w do write(string.char(127)) end st(colors.white)  end
-local function drawLines() clr() cp(1,1) drawLine() cp(1,h) drawLine() cp(1,2) end
-
 local function setInfo(stat, col)
 	status, color = stat or status, col or color
 	setLabel("§f"..math.min(getLevel(), 9999).." | §"..color..status)
@@ -169,7 +175,14 @@ local function requestDistance(estMoves)
 	return distance
 end
 
-
+local function doPatchNotes()
+	clr() cp(1,1) print("Press 'enter' to continue") print("Patch Notes: ")
+	for i=1, #patchnotes do
+		sleep(.1) os.pullEvent("key") print(patchnotes[i])
+	end
+	drawLine()
+	print("press any key to exit.") sleep(.5) os.pullEvent("key")
+end
 
 local function basicTunnel(distance)
 	if not distance then return false end
@@ -510,13 +523,14 @@ local rawMenu = {
 	{"Misc.", {
 		{"Manual Control", doManualControl},
 	}},
+	{"Patch Notes", doPatchNotes},
 	{"Exit"}
 }
 
-local function execute()
-	local menu = rawMenu
+local function runMenu(menu)
 	local function resetScreen() clr() cp(1,1) drawLine() cp(1,h) drawLine() cp(w/2-1,2) write("STP") sb(colors.black) end resetScreen()
-	while run do
+	while true do
+		
 		blocks_total = 0
 		resetScreen() cp(1,9)
 		for i=1, math.min(h-5, #menu) do
@@ -531,37 +545,47 @@ local function execute()
 				end
 			end
 		end st(colors.white)
+
 		_,b = os.pullEvent("key")
 		if b == keys.w or b == keys.up then
 			if sel == 1 then sel = #menu else sel = sel - 1 end
 		elseif b == keys.s or b == keys.down then
 			if sel == #menu then sel = 1 else sel = sel + 1 end
 		elseif b == keys.enter or b == keys.e then
-			st(colors.white)
-			for i=1, 2 do
-				resetScreen()
-				paintutils.drawLine(1,4,w,4,colors.gray)
-				cp(w/2-string.len(menu[sel][1])/2, 4)
-				write(menu[sel][1]) sb(colors.black) sleep(.05)
-				resetScreen() sleep(.05)
-			end
-			if type(menu[sel][2]) == "table" then -- possible menu
-				prevMenu[#prevMenu+1] = {menu = menu, sel = sel}
-				menu = menu[sel][2] sel = 1
-				if menu[#menu] ~= {"Back"} then menu[#menu+1] = {"Back"} end
-			elseif not menu[sel][2] then -- possible prev/exit
-				if #prevMenu == 0 then run = false else menu, sel = prevMenu[#prevMenu].menu, prevMenu[#prevMenu].sel prevMenu[#prevMenu] = nil end
-			elseif type(menu[sel][2]) == "function" then -- possible program
-				blocks_total,gDistance=0,0 menu[sel][2](dis) setInfo("Idle", "e") resetScreen()
-			end
-		elseif b == keys.q then
-			run = false
+			break
+		end
+	end
+	st(colors.white)
+	for i=1, 2 do
+		resetScreen()
+		paintutils.drawLine(1,4,w,4,colors.gray)
+		cp(w/2-string.len(menu[sel][1])/2, 4)
+		write(menu[sel][1]) sb(colors.black) sleep(.05)
+		resetScreen() sleep(.05)
+	end
+	return sel
+end
+
+local function execute()
+	local menu = rawMenu
+	while run do
+		
+		if menu[#menu][1] ~= "Back" and #prevMenu ~= 0 then menu[#menu+1] = {"Back"} end
+		runMenu(menu)
+		
+		if type(menu[sel][2]) == "table" then -- possible menu
+			prevMenu[#prevMenu+1] = {menu = menu, sel = sel}
+			menu = menu[sel][2] sel = 1
+		elseif not menu[sel][2] then -- possible prev/exit
+			if #prevMenu == 0 then run = false else menu, sel = prevMenu[#prevMenu].menu, prevMenu[#prevMenu].sel prevMenu[#prevMenu] = nil end
+		elseif type(menu[sel][2]) == "function" then -- possible program
+			blocks_total,gDistance=0,0 menu[sel][2](dis) setInfo("Idle", "e")
 		end
 	end
 end
 
 c("Executing STP...")
-doRefuel() setInfo("Idle", "e")
+setInfo("Idle", "e")
 
 execute()
 clr() cp(1,1) print("STP Closed.") sleep(0.2)
