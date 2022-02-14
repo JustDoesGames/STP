@@ -274,6 +274,19 @@ local function do3x1()
 	end
 end
 
+local function do3x3UP()
+	local dis = requestDistance(5)
+	if dis then
+		for i=1, dis do
+			digForward() if i ~= dis then digUp() end
+			t.turnLeft() goForward() if i ~= dis then digUp() end t.turnLeft() digForward() t.turnRight() t.turnRight() digForward() t.turnRight() goForward()
+			digForward() t.turnRight() digForward() t.turnLeft() goForward()
+			if i ~= dis then digUp() end t.turnLeft() digForward() t.turnRight() t.turnRight() digForward() t.turnRight() goForward() t.turnRight() if i ~= dis then goUp() end
+		end
+		for i=1, dis-1 do goDown() end
+	end
+end
+
 local function doManualControl()
 	drawLines()
 	print("w/s - Go forward / back")
@@ -490,6 +503,7 @@ local rawMenu = {
 		{"3x2 Tunnel - Single", doTunnel},
 		{"3x4 Tunnel - Double", doAdvTunnel},
 		{"3x1 Tunnel - Flat", do3x1},
+		{"3x3 Tunnel UP", do3x3UP},
 	}},
 	{"Strip Mine", {
 		{"1x2 Strip Mine", doStripTunnel},
