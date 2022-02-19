@@ -274,6 +274,22 @@ local function do3x1()
 	end
 end
 
+local function do3x3()
+	local dis = requestDistance(5)
+	if dis then
+		basicTunnel(dis) sleep(.5)
+		t.turnLeft()
+		goUp() goUp() digForward()
+		t.turnLeft() t.turnLeft() digForward() t.turnRight()
+		for i=1, dis-1 do
+			digForward()  drawInfo() goForward() setInfo(dis-i, "a") t.turnLeft() digForward() t.turnRight() t.turnRight() digForward() t.turnLeft()
+		end
+		sleep(.5)
+		t.turnLeft() t.turnLeft()
+		goDown() goDown()
+	end
+end
+
 local function do3x3UP()
 	local dis = requestDistance(5)
 	if dis then
@@ -500,9 +516,10 @@ local prevMenu = {}
 
 local rawMenu = {
 	{"Tunnel", {
-		{"3x2 Tunnel - Single", doTunnel},
-		{"3x4 Tunnel - Double", doAdvTunnel},
 		{"3x1 Tunnel - Flat", do3x1},
+		{"3x2 Tunnel - Single", doTunnel},
+		{"3x3 Tunnel - Single+", do3x3},
+		{"3x4 Tunnel - Single++", doAdvTunnel},
 		{"3x3 Tunnel UP", do3x3UP},
 	}},
 	{"Strip Mine", {
