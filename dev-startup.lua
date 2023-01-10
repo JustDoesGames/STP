@@ -7,14 +7,7 @@ Simplistic t Program (STP)
 --]]
 
 local patchnotes = {
-	"Removed logo for simplisity",
-	"Console on boot off by default",
-	"Fully reworked update system. (now goes through github & pastebin)",
-	"Updating is now 2x faster and now uses the 'http' api instead of shell",
-	"Label will no longer show 'Booting STP...'",
-	"Turtle is not longer required to be fueled to start in menu",
-	"Added patch notes",
-	"I am fully aware of current issues and in the process of fixing them.",
+	--
 }
 
 local w,h = term.getSize()
@@ -48,7 +41,7 @@ local status, color = "Idle", "e"
 if not http then
 	c("Http is disabled. Skipping Update...") sleep(1)
 elseif not update then
-	c("Updates disabled. Skipping...") sleep(1)
+	c("Updates disabled. Skipping...") --sleep(1)
 else
 	write("[STP] Checking for updates")
 	local h = http.get("https://raw.githubusercontent.com/JustDoesGames/STP/main/startup.lua")
@@ -133,6 +126,7 @@ local function setInfo(stat, col)
 	status, color = stat or status, col or color
 	setLabel("§f"..math.min(getLevel(), 9999).." | §"..color..status)
 end
+setInfo("Booting...", "e") sleep(.2)
 
 local function drawInfo()
 	drawLines()
@@ -338,6 +332,25 @@ local function doManualControl()
 	end
 end
 
+local function doConcrete()
+	drawLines()
+	print("Concrete")
+	print("Press 'q' to exit.")
+	local function a()
+		while true do
+			if turtle.detect() then turtle.dig() end
+			if turtle.getSelectedSlot() ~= nil then turtle.place(1) end
+			sleep(.25)
+		end
+	end
+	local function getKey()
+		local b while b ~= keys.q do
+			_,b = os.pullEvent("key")
+		end
+	end
+	parallel.waitForAny(a, getKey)
+end
+
 local function doInfMine()
 	drawLines()
 	print("Infinite Mine")
@@ -536,6 +549,7 @@ local rawMenu = {
 		{"Inf. Attack - Drop Down", doInfAttackDown},
 		{"Inf. Rotate Attack", doInfRotateAttack},
 		{"Inf. Rotate Attack - Drop Down", doInfRotateAttackDown},
+		{"Concrete", doConcrete},
 	}},
 	{"Staircase", {
 		{"Single Staircase - Up", doSingleStaircaseUp},
@@ -554,7 +568,7 @@ local rawMenu = {
 	{"Misc.", {
 		{"Manual Control", doManualControl},
 	}},
-	{"Patch Notes", doPatchNotes},
+	--{"Patch Notes", doPatchNotes},
 	{"Exit"}
 }
 
