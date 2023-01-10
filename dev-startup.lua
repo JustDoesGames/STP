@@ -7,7 +7,8 @@ Simplistic t Program (STP)
 --]]
 
 local patchnotes = {
-	--
+	"Added Concrete",
+	"Removed sleep timers",
 }
 
 local w,h = term.getSize()
